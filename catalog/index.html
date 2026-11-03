@@ -111,7 +111,11 @@ dialog:not([open]){display:none}
 .vsel{display:flex;align-items:center;gap:6px;padding:0 8px 8px}
 .vsel select{flex:1;min-width:0;font:inherit;font-size:14px;font-weight:600;padding:9px 8px;border:1.5px solid var(--ink);border-radius:9px;background:#fff;color:var(--ink)}
 .vsel .vcount{font-size:11px;color:#8b8577;white-space:nowrap}
-.quick{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:0 8px 8px}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:0 8px 4px}
+.quick button.usual{border-color:#1f8b4c;color:#1f8b4c;background:#eef8f1}
+.quick button.usual::before{content:"★ ";font-size:10px}
+.quick button.usual.on{background:#1f8b4c;color:#fff}
+.usualnote{font-size:10.5px;color:#1f8b4c;padding:0 9px 6px;font-weight:600}
 .quick button{font:inherit;font-size:13px;font-weight:700;padding:9px 0;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
 .quick button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .step{padding:8px!important}
@@ -173,8 +177,8 @@ dialog:not([open]){display:none}
   </div>
 </dialog>
 
-<script src="items.js?v=202611031509"></script>
-<script src="stores.js?v=202611031509"></script>
+<script src="items.js?v=202611031527"></script>
+<script src="stores.js?v=202611031527"></script>
 <script>document.write('<script src="live.js?t=' + Date.now() + '"><\/script>')</script>
 <script>
 const IMG = "https://cdn.shopify.com/s/files/1/0681/8231/1226/";
@@ -193,7 +197,7 @@ Object.entries(VARIANTS).forEach(([base, v]) => {
   CAT[v.cat] = CAT[v.cat] || [];
   v.opts.forEach(([label, vid, price, img, zid]) => {
     const lv = (window.LIVE || {})[vid];
-    CAT[v.cat].push([(v.name || base) + (label ? " - " + label : ""), lv ? lv[0] : (price != null ? price : v.price), vid, img || v.img, zid || "", 0, v.sales || 0]);
+    CAT[v.cat].push([(v.name || base) + (label ? " - " + label : ""), lv ? lv[0] : (price != null ? price : v.price), vid, img || v.img, zid || "", 0, v.sales || 0, v.usual || []]);
   });
 });
 const VAR_BASE = {};
@@ -422,7 +426,12 @@ function tileHTML(cat, item){
       return `<div class="vrow">` + b.v.opts.map(o =>
         `<button class="vchip ${o[1]===vid?'sel':''} ${isSold(o[1])?'vsold':''}" data-jump="${o[1]}">${o[0] || "Regular"}</button>`).join("") + `</div>`;
     })()}
-    ${sold ? `` : `<div class="quick">${QUICK.map(n => `<button data-setq="${vid}" data-n="${n}" class="${q===n?'on':''}">${n}</button>`).join("")}</div>`}
+    ${sold ? `` : (() => {
+      const usual = item[7] || [];
+      const nums = [...new Set([1, 2, 3, ...usual])].sort((a, b) => a - b);
+      return `<div class="quick">${nums.map(n => `<button data-setq="${vid}" data-n="${n}" class="${q===n?'on':''} ${usual.includes(n)?'usual':''}">${n}</button>`).join("")}</div>` +
+        (usual.length ? `<div class="usualnote">★ usual order</div>` : ``);
+    })()}
     ${q ? `<div class="qty">${q}</div>
     <div class="step">
       <button data-dec="${vid}" aria-label="Remove one">−</button>
