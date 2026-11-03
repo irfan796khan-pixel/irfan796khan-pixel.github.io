@@ -82,7 +82,14 @@ dialog:not([open]){display:none}
 .clear{margin-top:8px;width:100%;background:transparent;border:0;color:var(--alert);font:inherit;font-size:13px;font-weight:600;padding:10px;cursor:pointer}
 .storebar{display:flex;align-items:center;gap:8px;padding:0 14px 8px;background:var(--ink)}
 .storebar label{color:#8fa2b3;font-size:12px;font-weight:600}
-.storebar input{flex:1;min-width:0;border:0;border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;font-weight:600;background:#fff;color:var(--ink)}
+.storewrap{flex:1;min-width:0;position:relative}
+#storeSug{display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:70;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.28);overflow:hidden;max-height:60vh;overflow-y:auto}
+#storeSug.open{display:block}
+#storeSug button{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;gap:8px;width:100%;padding:11px 12px;font-size:14px;color:var(--ink);border-bottom:1px solid #eee;cursor:pointer}
+#storeSug button.hi,#storeSug button:active{background:var(--signal-soft)}
+#storeSug em{font-style:normal;font-size:11px;color:#8b8577}
+#storeSug .newst{color:var(--signal);font-weight:700}
+.storebar input{width:100%;border:0;border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;font-weight:600;background:#fff;color:var(--ink)}
 .storebar button{border:0;background:#1e3346;color:#c3d0da;border-radius:9px;width:36px;height:36px;font-size:15px;cursor:pointer}
 .tile.soldout{border-color:#d0242f;box-shadow:inset 0 0 0 1px #d0242f}
 .tile.soldout .thumb,.tile.soldout .noimg{opacity:.35;filter:grayscale(1)}
@@ -116,9 +123,11 @@ dialog:not([open]){display:none}
 </header>
 <div class="storebar">
   <label for="store">Store</label>
-  <input id="store" list="storeList" placeholder="Pick a store or type a new one" autocomplete="off">
-  <datalist id="storeList"></datalist>
-  <button id="storeForget" type="button" title="Remove this store from the list">✕</button>
+  <div class="storewrap">
+    <input id="store" placeholder="Pick a store or type a new one" autocomplete="off" autocorrect="off" spellcheck="false">
+    <div id="storeSug" role="listbox"></div>
+  </div>
+  <button id="storeForget" type="button" title="Clear / remove this store">✕</button>
 </div>
 <nav class="chips" id="chips"></nav>
 </div>
@@ -147,8 +156,8 @@ dialog:not([open]){display:none}
   </div>
 </dialog>
 
-<script src="items.js?v=202611031411"></script>
-<script src="stores.js?v=202611031411"></script>
+<script src="items.js?v=202611031418"></script>
+<script src="stores.js?v=202611031418"></script>
 <script>document.write('<script src="live.js?t=' + Date.now() + '"><\/script>')</script>
 <script>
 const IMG = "https://cdn.shopify.com/s/files/1/0681/8231/1226/";
@@ -178,11 +187,53 @@ const STORE_KEY = "mf_stores", CUR_KEY = "mf_store";
 function lsGet(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } }
 function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 let stores = lsGet(STORE_KEY, []);
+let allStores = [];
 function drawStores(){
   const mine = new Set(stores.map(x => x.toLowerCase()));
-  const all = stores.concat((window.CRM_STORES || []).filter(x => !mine.has(x.toLowerCase())));
-  document.getElementById("storeList").innerHTML =
-    all.map(s => `<option value="${s.replace(/"/g,"&quot;")}"></option>`).join("");
+  allStores = stores.map(n => ({n, mine:1})).concat(
+    (window.CRM_STORES || []).filter(x => !mine.has(x.toLowerCase())).map(n => ({n, mine:0})));
+  allStores.forEach(s => { s.k = normName(s.n); s.w = s.k.split(" "); });
+}
+/* closeness: whole text at start > a word starts with it > contained > every word found > near spelling */
+function normName(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
+function grams(s){ const g = new Set(), t = " " + s + " "; for(let i=0;i<t.length-1;i++) g.add(t.slice(i,i+2)); return g; }
+function dice(a, b){ const A = grams(a), B = grams(b); let n = 0; A.forEach(x => B.has(x) && n++); return 2*n/(A.size+B.size||1); }
+function scoreStore(s, q, qw){
+  if(s.k.startsWith(q)) return 100;
+  if(s.w.some(w => w.startsWith(q))) return 90;
+  if(s.k.includes(q)) return 80;
+  if(qw.every(t => s.w.some(w => w.startsWith(t)))) return 70;
+  if(qw.every(t => s.k.includes(t))) return 60;
+  // typo tolerance: best word-by-word spelling match
+  let sum = 0;
+  qw.forEach(t => { let best = 0; s.w.forEach(w => { const d = dice(t, w.slice(0, t.length + 2)); if(d > best) best = d; }); sum += best; });
+  const avg = sum / qw.length;
+  return avg >= 0.55 ? Math.round(avg * 55) : 0;
+}
+function suggestStores(text){
+  const q = normName(text);
+  if(!q) return allStores.filter(s => s.mine).slice(0, 8);
+  const qw = q.split(" ");
+  return allStores.map(s => ({s, sc: scoreStore(s, q, qw) + (s.mine ? 3 : 0)}))
+    .filter(x => x.sc > 3).sort((a, b) => b.sc - a.sc || a.s.n.length - b.s.n.length)
+    .slice(0, 8).map(x => x.s);
+}
+let sugIdx = -1;
+function showSug(){
+  const box = document.getElementById("store"), el = document.getElementById("storeSug");
+  const list = suggestStores(box.value);
+  sugIdx = -1;
+  if(!list.length || document.activeElement !== box){ el.classList.remove("open"); el.innerHTML = ""; return; }
+  el.innerHTML = list.map((s, i) => `<button type="button" data-pick="${i}">${s.n.replace(/</g,"&lt;")}${s.mine ? '<em>saved</em>' : ''}</button>`).join("")
+    + (box.value.trim() && !list.some(s => s.n.toLowerCase() === box.value.trim().toLowerCase())
+       ? `<button type="button" data-new="1" class="newst">+ New store: “${box.value.trim().replace(/</g,"&lt;")}”</button>` : "");
+  el._list = list; el.classList.add("open");
+}
+function pickStore(name){
+  const box = document.getElementById("store");
+  box.value = name; saveStore();
+  const el = document.getElementById("storeSug"); el.classList.remove("open"); el.innerHTML = "";
+  box.blur();
 }
 function currentStore(){ return document.getElementById("store").value.trim(); }
 function saveStore(){
@@ -197,12 +248,34 @@ function saveStore(){
   const box = document.getElementById("store");
   drawStores();
   box.value = lsGet(CUR_KEY, "");
-  box.addEventListener("change", saveStore);
-  box.addEventListener("keydown", e => { if(e.key === "Enter"){ box.blur(); saveStore(); } });
+  const sug = document.getElementById("storeSug");
+  box.addEventListener("input", showSug);
+  box.addEventListener("focus", showSug);
+  box.addEventListener("blur", () => setTimeout(() => { sug.classList.remove("open"); }, 200));
+  box.addEventListener("keydown", e => {
+    const btns = [...sug.querySelectorAll("button")];
+    if(e.key === "ArrowDown" || e.key === "ArrowUp"){
+      e.preventDefault(); if(!btns.length) return;
+      sugIdx = (sugIdx + (e.key === "ArrowDown" ? 1 : -1) + btns.length) % btns.length;
+      btns.forEach((b, i) => b.classList.toggle("hi", i === sugIdx));
+    } else if(e.key === "Enter"){
+      e.preventDefault();
+      if(sugIdx >= 0 && btns[sugIdx]) btns[sugIdx].dispatchEvent(new Event("pointerdown", {bubbles:true}));
+      else pickStore(box.value.trim());
+    } else if(e.key === "Escape"){ sug.classList.remove("open"); }
+  });
+  // pointerdown fires before the box loses focus, so the tap is never lost
+  sug.addEventListener("pointerdown", e => {
+    const b = e.target.closest("button"); if(!b) return;
+    e.preventDefault();
+    if(b.dataset.new) pickStore(box.value.trim());
+    else pickStore(sug._list[+b.dataset.pick].n);
+  });
   document.getElementById("storeForget").onclick = () => {
     const s = currentStore();
     stores = stores.filter(x => x.toLowerCase() !== s.toLowerCase()); lsSet(STORE_KEY, stores); drawStores();
     box.value = ""; lsSet(CUR_KEY, ""); if(typeof syncBar === "function") syncBar();
+    box.focus();
   };
 })();
 function flash(msg){
