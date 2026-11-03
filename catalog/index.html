@@ -80,6 +80,18 @@ dialog:not([open]){display:none}
 .acts .primary{background:var(--ink);color:#fff}
 .acts .wide{grid-column:1/-1}
 .clear{margin-top:8px;width:100%;background:transparent;border:0;color:var(--alert);font:inherit;font-size:13px;font-weight:600;padding:10px;cursor:pointer}
+.storebar{display:flex;align-items:center;gap:8px;padding:0 14px 8px;background:var(--ink)}
+.storebar label{color:#8fa2b3;font-size:12px;font-weight:600}
+.storebar input{flex:1;min-width:0;border:0;border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;font-weight:600;background:#fff;color:var(--ink)}
+.storebar button{border:0;background:#1e3346;color:#c3d0da;border-radius:9px;width:36px;height:36px;font-size:15px;cursor:pointer}
+.tile.soldout{border-color:#d0242f;box-shadow:inset 0 0 0 1px #d0242f}
+.tile.soldout .thumb,.tile.soldout .noimg{opacity:.35;filter:grayscale(1)}
+.tile.soldout .price{color:#d0242f;text-decoration:line-through}
+.soldx{position:absolute;left:0;right:0;top:0;aspect-ratio:1/1;display:grid;place-items:center;align-content:center;z-index:2;pointer-events:none;color:#d0242f;font-size:84px;font-weight:800;line-height:1}
+.soldx span{font-size:13px;letter-spacing:1px;background:#d0242f;color:#fff;padding:3px 8px;border-radius:6px;margin-top:2px}
+.vchip.vsold{color:#d0242f;border-color:#f0b8bb;text-decoration:line-through}
+#flash{position:fixed;left:50%;bottom:90px;transform:translate(-50%,20px);opacity:0;background:#d0242f;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;font-weight:700;z-index:90;transition:.25s;pointer-events:none}
+#flash.show{opacity:1;transform:translate(-50%,0)}
 .catcard{all:unset;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
 .catcard .cn{padding:8px 9px 0;font-size:13px;font-weight:700;line-height:1.25}
 .catcard .cc{padding:2px 9px 10px;font-size:11.5px;color:#8b8577}
@@ -102,6 +114,12 @@ dialog:not([open]){display:none}
     <input id="q" type="search" placeholder="Search item or price…" autocomplete="off">
   </div>
 </header>
+<div class="storebar">
+  <label for="store">Store</label>
+  <input id="store" list="storeList" placeholder="Pick a store or type a new one" autocomplete="off">
+  <datalist id="storeList"></datalist>
+  <button id="storeForget" type="button" title="Remove this store from the list">✕</button>
+</div>
 <nav class="chips" id="chips"></nav>
 </div>
 <main id="main"></main>
@@ -113,7 +131,7 @@ dialog:not([open]){display:none}
 
 <dialog id="sheet">
   <div class="sheet">
-    <h3>Your order</h3>
+    <h3>Your order<span id="sheetStore" style="display:block;font-size:13px;font-weight:600;color:#8C1D27;margin-top:3px"></span></h3>
     <div id="lines"></div>
     <div class="tot"><span>Total</span><span id="sheetTotal">$0.00</span></div>
     <div class="acts">
@@ -143,12 +161,50 @@ Object.values(VARIANTS).forEach(v => { v.cat = (window.CAT_RENAME||{})[v.cat] ||
 Object.entries(VARIANTS).forEach(([base, v]) => {
   CAT[v.cat] = CAT[v.cat] || [];
   v.opts.forEach(([label, vid]) => {
-    CAT[v.cat].push([base + " - " + label, v.price, vid, v.img]);
+    const lv = (window.LIVE || {})[vid];
+    CAT[v.cat].push([base + " - " + label, (lv && lv[0] != null) ? lv[0] : v.price, vid, v.img]);
   });
 });
 const VAR_BASE = {};
 Object.entries(VARIANTS).forEach(([base, v]) =>
   v.opts.forEach(([label, vid]) => VAR_BASE[vid] = {base, label, v}));
+
+/* ---------- store name (saved on this phone only) ---------- */
+const STORE_KEY = "mf_stores", CUR_KEY = "mf_store";
+function lsGet(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } }
+function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+let stores = lsGet(STORE_KEY, []);
+function drawStores(){
+  document.getElementById("storeList").innerHTML =
+    stores.map(s => `<option value="${s.replace(/"/g,"&quot;")}"></option>`).join("");
+}
+function currentStore(){ return document.getElementById("store").value.trim(); }
+function saveStore(){
+  const s = currentStore();
+  lsSet(CUR_KEY, s);
+  if(s && !stores.some(x => x.toLowerCase() === s.toLowerCase())){
+    stores.unshift(s); stores = stores.slice(0, 300); lsSet(STORE_KEY, stores); drawStores();
+  }
+  if(typeof syncBar === "function") syncBar();
+}
+(function initStore(){
+  const box = document.getElementById("store");
+  drawStores();
+  box.value = lsGet(CUR_KEY, "");
+  box.addEventListener("change", saveStore);
+  box.addEventListener("keydown", e => { if(e.key === "Enter"){ box.blur(); saveStore(); } });
+  document.getElementById("storeForget").onclick = () => {
+    const s = currentStore();
+    stores = stores.filter(x => x.toLowerCase() !== s.toLowerCase()); lsSet(STORE_KEY, stores); drawStores();
+    box.value = ""; lsSet(CUR_KEY, ""); if(typeof syncBar === "function") syncBar();
+  };
+})();
+function flash(msg){
+  let f = document.getElementById("flash");
+  if(!f){ f = document.createElement("div"); f.id = "flash"; document.body.appendChild(f); }
+  f.textContent = msg; f.classList.add("show");
+  clearTimeout(flash.t); flash.t = setTimeout(() => f.classList.remove("show"), 1800);
+}
 
 /* ---------- state ---------- */
 const order = new Map();
@@ -160,6 +216,14 @@ const money = n => "$" + n.toFixed(2);
 Object.entries(window.EXTRA_DATA || {}).forEach(([c, list]) => {
   CAT[c] = (CAT[c] || []).concat(list);
 });
+Object.values(CAT).forEach(list => list.forEach(row => {
+  const lv = row[2] > 0 && (window.LIVE || {})[row[2]];
+  if(!lv) return;
+  if(lv[0] != null) row[1] = lv[0];
+  row[5] = lv[1] ? 1 : 0;
+}));
+Object.keys(CAT).forEach(c => { CAT[c] = CAT[c].map((r,i)=>[r,i]).sort((a,b)=>(a[0][5]||0)-(b[0][5]||0)||a[1]-b[1]).map(x=>x[0]); });  // sold out goes to the bottom
+const isSold = vid => { for(const c in CAT){ const r = CAT[c].find(i => i[2] === vid); if(r) return !!r[5]; } return false; };
 const cats = [...(window.CAT_ORDER || []).filter(c => CAT[c] && CAT[c].length),
               ...Object.keys(CAT).filter(c => !(window.CAT_ORDER || []).includes(c) && CAT[c].length)];
 
@@ -199,14 +263,14 @@ const SEARCH_CAP = 150;
 
 /* ---------- rendering ---------- */
 function tileHTML(cat, item){
-  const [n, p, vid, img] = item;
+  const [n, p, vid, img, , sold] = item;
   const q = order.get(vid)?.q || 0;
   const pic = img
     ? `<img class="thumb" loading="lazy" referrerpolicy="no-referrer" src="${IMG + img}" alt=""
          onerror="this.outerHTML='<div class=\\'noimg\\'>image blocked</div>'">`
     : `<div class="noimg">no photo</div>`;
   return `
-  <div class="tile ${q?'on':''}">
+  <div class="tile ${q?'on':''} ${sold?'soldout':''}">${sold ? `<div class="soldx" aria-label="Sold out">✕<span>SOLD OUT</span></div>` : ``}
     <button class="add" data-vid="${vid}" style="all:unset;cursor:pointer;display:block">
       ${pic}
       <div class="meta"><div class="name">${n}</div><div class="price">${money(p)}</div></div>
@@ -215,7 +279,7 @@ function tileHTML(cat, item){
       const b = VAR_BASE[vid];
       if(!b) return "";
       return `<div class="vrow">` + b.v.opts.map(o =>
-        `<button class="vchip ${o[1]===vid?'sel':''}" data-jump="${o[1]}">${o[0]}</button>`).join("") + `</div>`;
+        `<button class="vchip ${o[1]===vid?'sel':''} ${isSold(o[1])?'vsold':''}" data-jump="${o[1]}">${o[0]}</button>`).join("") + `</div>`;
     })()}
     ${q ? `<div class="qty">${q}</div>
     <div class="step">
@@ -269,6 +333,7 @@ function bump(vid, delta){
     if(f){ found = f; cat = c; break; }
   }
   if(!found) return;
+  if(found[5] && delta > 0){ flash("Sold out — can't add this one"); return; }
   const q = (order.get(vid)?.q || 0) + delta;
   if(q <= 0) order.delete(vid);
   else order.set(vid, {n: found[0], p: found[1], img: found[3], zid: found[4] || "", q, cat});
@@ -304,7 +369,7 @@ function syncBar(){
   const {count, sum} = totals();
   $("#bar").classList.toggle("show", count > 0);
   document.getElementById("gWrap")?.classList.toggle("noBar", count === 0);
-  $("#barCount").textContent = count + (count === 1 ? " item" : " items");
+  $("#barCount").textContent = (currentStore() ? currentStore() + " · " : "") + count + (count === 1 ? " item" : " items");
   $("#barTotal").textContent = money(sum);
 }
 
@@ -320,6 +385,7 @@ function drawSheet(){
         <div class="rq"><button data-dec="${vid}">−</button><b>${v.q}</b><button data-inc="${vid}">+</button></div>
       </div>`).join("");
   $("#sheetTotal").textContent = money(totals().sum);
+  $("#sheetStore").textContent = currentStore() ? "Store: " + currentStore() : "No store picked — choose one at the top";
   $("#waBtn").href = "https://wa.me/" + MY_WHATSAPP + "?text=" + encodeURIComponent(orderText());
 }
 
@@ -332,7 +398,7 @@ function shortName(n){
 }
 
 function orderText(){
-  let t = "";
+  let t = currentStore() ? currentStore() + "\n" : "";
   order.forEach(v => {
     t += shortName(v.n) + (v.note ? " (" + v.note + ")" : "") + " " + v.q + "\n";
   });
@@ -375,13 +441,13 @@ $("#copyBtn").onclick = async () => {
   setTimeout(() => $("#copyBtn").textContent = "Copy order list", 1800);
 };
 $("#csvBtn").onclick = () => {
-  let csv = "Item,Variety note,Category,Unit price,Qty,Line total,Variant ID,Zoho item ID\n";
+  let csv = "Store,Item,Variety note,Category,Unit price,Qty,Line total,Variant ID,Zoho item ID\n";
   order.forEach((v, vid) => {
-    csv += `"${shortName(v.n).replace(/"/g,'""')}","${(v.note||"").replace(/"/g,'""')}","${v.cat}",${v.p},${v.q},${(v.p*v.q).toFixed(2)},${vid > 0 ? vid : ""},${v.zid}\n`;
+    csv += `"${currentStore().replace(/"/g,'""')}","${shortName(v.n).replace(/"/g,'""')}","${(v.note||"").replace(/"/g,'""')}","${v.cat}",${v.p},${v.q},${(v.p*v.q).toFixed(2)},${vid > 0 ? vid : ""},${v.zid}\n`;
   });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
-  a.download = `mayflower-order-${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `mayflower-order-${(currentStore() || "store").replace(/[^a-z0-9]+/gi,"-")}-${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
 };
 $("#clearBtn").onclick = () => { order.clear(); render(); drawSheet(); };
