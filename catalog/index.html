@@ -133,6 +133,8 @@ dialog:not([open]){display:none}
   <div class="sheet">
     <h3>Your order<span id="sheetStore" style="display:block;font-size:13px;font-weight:600;color:#8C1D27;margin-top:3px"></span></h3>
     <div id="lines"></div>
+    <textarea id="orderNote" rows="2" placeholder="Comment for this order (delivery day, special request…)"
+      style="width:100%;margin-top:12px;border:1px solid var(--line);border-radius:9px;padding:9px 10px;font:inherit;font-size:13.5px;background:#fff;resize:vertical"></textarea>
     <div class="tot"><span>Total</span><span id="sheetTotal">$0.00</span></div>
     <div class="acts">
       <button class="primary wide" id="cartBtn">Open this cart on the store</button>
@@ -402,6 +404,8 @@ function orderText(){
   order.forEach(v => {
     t += shortName(v.n) + (v.note ? " (" + v.note + ")" : "") + " " + v.q + "\n";
   });
+  const c = document.getElementById("orderNote")?.value.trim();
+  if(c) t += "\nComment: " + c;
   return t.trim();
 }
 
@@ -410,7 +414,10 @@ document.getElementById("lines").addEventListener("input", e => {
   if(!n) return;
   const rec = order.get(+n.dataset.note);
   if(rec) rec.note = n.value;
+  refreshShare();
 });
+function refreshShare(){ $("#waBtn").href = "https://wa.me/" + MY_WHATSAPP + "?text=" + encodeURIComponent(orderText()); }
+document.getElementById("orderNote").addEventListener("input", refreshShare);
 
 function openSheet(){
   drawSheet();
@@ -446,11 +453,13 @@ $("#csvBtn").onclick = () => {
     csv += `"${currentStore().replace(/"/g,'""')}","${shortName(v.n).replace(/"/g,'""')}","${(v.note||"").replace(/"/g,'""')}","${v.cat}",${v.p},${v.q},${(v.p*v.q).toFixed(2)},${vid > 0 ? vid : ""},${v.zid}\n`;
   });
   const a = document.createElement("a");
+  const oc = document.getElementById("orderNote")?.value.trim();
+  if(oc) csv += `"${currentStore().replace(/"/g,'""')}","ORDER COMMENT: ${oc.replace(/"/g,'""')}",,,,,,,\n`;
   a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
   a.download = `mayflower-order-${(currentStore() || "store").replace(/[^a-z0-9]+/gi,"-")}-${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
 };
-$("#clearBtn").onclick = () => { order.clear(); render(); drawSheet(); };
+$("#clearBtn").onclick = () => { order.clear(); document.getElementById("orderNote").value = ""; render(); drawSheet(); };
 
 let t;
 $("#q").addEventListener("input", e => {
