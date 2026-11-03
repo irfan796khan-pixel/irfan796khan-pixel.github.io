@@ -147,7 +147,8 @@ dialog:not([open]){display:none}
   </div>
 </dialog>
 
-<script src="items.js?v=202611031402"></script>
+<script src="items.js?v=202611031411"></script>
+<script src="stores.js?v=202611031411"></script>
 <script>document.write('<script src="live.js?t=' + Date.now() + '"><\/script>')</script>
 <script>
 const IMG = "https://cdn.shopify.com/s/files/1/0681/8231/1226/";
@@ -178,8 +179,10 @@ function lsGet(k, d){ try{ const v = localStorage.getItem(k); return v == null ?
 function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 let stores = lsGet(STORE_KEY, []);
 function drawStores(){
+  const mine = new Set(stores.map(x => x.toLowerCase()));
+  const all = stores.concat((window.CRM_STORES || []).filter(x => !mine.has(x.toLowerCase())));
   document.getElementById("storeList").innerHTML =
-    stores.map(s => `<option value="${s.replace(/"/g,"&quot;")}"></option>`).join("");
+    all.map(s => `<option value="${s.replace(/"/g,"&quot;")}"></option>`).join("");
 }
 function currentStore(){ return document.getElementById("store").value.trim(); }
 function saveStore(){
