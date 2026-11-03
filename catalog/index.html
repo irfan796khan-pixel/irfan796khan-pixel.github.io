@@ -103,6 +103,25 @@ dialog:not([open]){display:none}
 .catcard .cn{padding:8px 9px 0;font-size:13px;font-weight:700;line-height:1.25}
 .catcard .cc{padding:2px 9px 10px;font-size:11.5px;color:#8b8577}
 .catword{font-size:18px;font-weight:800;color:var(--ink-2)}
+.storebar.top{padding:10px 0 0;background:transparent}
+.name{font-size:11.5px!important;line-height:1.25!important;-webkit-line-clamp:2!important}
+.price{font-size:15px!important}
+.vrow{flex-wrap:wrap!important;overflow:visible!important;gap:5px!important;padding:0 8px 8px!important}
+.vchip{font-size:12.5px!important;padding:7px 10px!important;border-width:1.5px!important}
+.vsel{display:flex;align-items:center;gap:6px;padding:0 8px 8px}
+.vsel select{flex:1;min-width:0;font:inherit;font-size:14px;font-weight:600;padding:9px 8px;border:1.5px solid var(--ink);border-radius:9px;background:#fff;color:var(--ink)}
+.vsel .vcount{font-size:11px;color:#8b8577;white-space:nowrap}
+.quick{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:0 8px 8px}
+.quick button{font:inherit;font-size:13px;font-weight:700;padding:9px 0;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
+.quick button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.step{padding:8px!important}
+.step button{width:44px!important;height:44px!important;font-size:22px!important;border-radius:10px!important}
+.step .qnum{width:auto!important;flex:1;font-size:14px!important;border:1px dashed #ddbfc1!important;background:#fff!important}
+.xclose{position:absolute;right:12px;top:12px;border:0;background:#e6e2d9;width:38px;height:38px;border-radius:50%;font-size:17px;cursor:pointer}
+.sheet{position:relative}
+#sendTop{display:grid;gap:8px;margin:2px 0 12px}
+#sendTop .wa{display:block;text-align:center;text-decoration:none;background:#1f8b4c;color:#fff;border-radius:12px;padding:17px 10px;font-size:18px;font-weight:800}
+#sendTop .copy{border:1.5px solid var(--ink);background:#fff;color:var(--ink);border-radius:12px;padding:13px 10px;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
 .empty{padding:40px 10px;text-align:center;color:#8b8577;font-size:14px}
 :focus-visible{outline:2px solid var(--signal);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -116,12 +135,7 @@ dialog:not([open]){display:none}
     <h1>Mayflower Wholesale</h1>
     <span id="liveAt">Tap an item to add it</span>
   </div>
-  <div class="search">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-    <input id="q" type="search" placeholder="Search item or price…" autocomplete="off">
-  </div>
-</header>
-<div class="storebar">
+<div class="storebar top">
   <label for="store">Store</label>
   <div class="storewrap">
     <input id="store" placeholder="Pick a store or type a new one" autocomplete="off" autocorrect="off" spellcheck="false">
@@ -129,6 +143,11 @@ dialog:not([open]){display:none}
   </div>
   <button id="storeForget" type="button" title="Clear / remove this store">✕</button>
 </div>
+  <div class="search">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    <input id="q" type="search" placeholder="Search item or price…" autocomplete="off">
+  </div>
+</header>
 <nav class="chips" id="chips"></nav>
 </div>
 <main id="main"></main>
@@ -139,25 +158,23 @@ dialog:not([open]){display:none}
 </div>
 
 <dialog id="sheet">
-  <div class="sheet">
+  <div class="sheet" tabindex="-1" autofocus>
+    <button type="button" class="xclose" id="xClose" aria-label="Close">✕</button>
     <h3>Your order<span id="sheetStore" style="display:block;font-size:13px;font-weight:600;color:#8C1D27;margin-top:3px"></span></h3>
+    <div id="sendTop"></div>
     <div id="lines"></div>
     <textarea id="orderNote" rows="2" placeholder="Comment for this order (delivery day, special request…)"
       style="width:100%;margin-top:12px;border:1px solid var(--line);border-radius:9px;padding:9px 10px;font:inherit;font-size:13.5px;background:#fff;resize:vertical"></textarea>
     <div class="tot"><span>Total</span><span id="sheetTotal">$0.00</span></div>
-    <div class="acts">
-      <button class="primary wide" id="cartBtn">Open this cart on the store</button>
-      <a id="waBtn" target="_blank" rel="noopener">Send on WhatsApp</a>
-      <button id="copyBtn">Copy order list</button>
-      <button id="csvBtn" class="wide">Download CSV</button>
-    </div>
+    <a id="waBtn" class="wa" target="_blank" rel="noopener">Send on WhatsApp</a>
+    <button id="copyBtn" class="copy">Copy order list</button>
     <button class="clear" id="clearBtn">Clear order</button>
-    <div class="acts" style="margin-top:14px"><button class="wide" id="closeBtn">Keep shopping</button></div>
+    <button id="closeBtn" hidden></button><button id="cartBtn" hidden></button><button id="csvBtn" hidden></button>
   </div>
 </dialog>
 
-<script src="items.js?v=202611031418"></script>
-<script src="stores.js?v=202611031418"></script>
+<script src="items.js?v=202611031436"></script>
+<script src="stores.js?v=202611031436"></script>
 <script>document.write('<script src="live.js?t=' + Date.now() + '"><\/script>')</script>
 <script>
 const IMG = "https://cdn.shopify.com/s/files/1/0681/8231/1226/";
@@ -173,9 +190,9 @@ const VARIANTS = window.VARIANTS_DATA || {};
 Object.values(VARIANTS).forEach(v => { v.cat = (window.CAT_RENAME||{})[v.cat] || v.cat; });
 Object.entries(VARIANTS).forEach(([base, v]) => {
   CAT[v.cat] = CAT[v.cat] || [];
-  v.opts.forEach(([label, vid]) => {
+  v.opts.forEach(([label, vid, price, img, zid]) => {
     const lv = (window.LIVE || {})[vid];
-    CAT[v.cat].push([base + " - " + label, lv ? lv[0] : v.price, vid, v.img]);
+    CAT[v.cat].push([(v.name || base) + (label ? " - " + label : ""), lv ? lv[0] : (price != null ? price : v.price), vid, img || v.img, zid || "", 0, v.sales || 0]);
   });
 });
 const VAR_BASE = {};
@@ -302,7 +319,7 @@ Object.values(CAT).forEach(list => list.forEach(row => {
   row[1] = lv[0];
   row[5] = lv[1] ? 0 : 1;                 // [price, available]
 }));
-Object.keys(CAT).forEach(c => { CAT[c] = CAT[c].map((r,i)=>[r,i]).sort((a,b)=>(a[0][5]||0)-(b[0][5]||0)||a[1]-b[1]).map(x=>x[0]); });  // sold out goes to the bottom
+Object.keys(CAT).forEach(c => { CAT[c] = CAT[c].map((r,i)=>[r,i]).sort((a,b)=>(a[0][5]||0)-(b[0][5]||0)||(b[0][6]||0)-(a[0][6]||0)||a[1]-b[1]).map(x=>x[0]); });  // sold out goes to the bottom
 const isSold = vid => { for(const c in CAT){ const r = CAT[c].find(i => i[2] === vid); if(r) return !!r[5]; } return false; };
 const cats = [...(window.CAT_ORDER || []).filter(c => CAT[c] && CAT[c].length),
               ...Object.keys(CAT).filter(c => !(window.CAT_ORDER || []).includes(c) && CAT[c].length)];
@@ -340,10 +357,49 @@ function homeHTML(){
     }).join("")}</div></section>`;
 }
 const SEARCH_CAP = 150;
+function pNorm(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
+const ROWKEY = new Map();
+function rowKey(it){ let k = ROWKEY.get(it); if(!k){ const t = pNorm(it[0]); k = {t, w: t.split(" ")}; ROWKEY.set(it, k); } return k; }
+function scoreItem(it, q, qw){
+  const {t, w} = rowKey(it);
+  if(t.startsWith(q)) return 100;
+  if(t.includes(q)) return w.some(x => x.startsWith(qw[0])) ? 90 : 80;
+  let hit = 0, fuzz = 0;
+  for(const term of qw){
+    if(w.some(x => x.startsWith(term))){ hit++; continue; }
+    if(term.length >= 3 && w.some(x => x.includes(term))){ hit += .8; continue; }
+    let best = 0;
+    if(term.length >= 3) for(const x of w){ const d = dice(term, x.slice(0, term.length + 2)); if(d > best) best = d; }
+    if(best >= .5){ fuzz += best; }
+  }
+  const all = (hit + fuzz) / qw.length;
+  if(hit === qw.length) return 70;
+  return all >= .6 ? Math.round(all * 60) : 0;
+}
+function topSellers(n){
+  const seen = new Set(), out = [];
+  const rows = [];
+  cats.forEach(c => CAT[c].forEach(r => { if(!r[5] && r[6] > 0) rows.push([c, r]); }));
+  rows.sort((a, b) => b[1][6] - a[1][6]);
+  for(const [c, r] of rows){
+    const b = VAR_BASE[r[2]]; const key = b ? b.base : r[2];
+    if(seen.has(key)) continue; seen.add(key); out.push([c, r]);
+    if(out.length >= n) break;
+  }
+  return out;
+}
 
 /* ---------- rendering ---------- */
+const QUICK = [6, 12, 24, 50, 100];
+function setQty(vid, n){
+  const cur = order.get(vid)?.q || 0;
+  if(n === cur) return;
+  bump(vid, n - cur);
+}
 function tileHTML(cat, item){
-  const [n, p, vid, img, , sold] = item;
+  const [full, p, vid, img, , sold] = item;
+  const vb = VAR_BASE[vid];
+  const n = vb ? (vb.v.name || vb.base) : full;
   const q = order.get(vid)?.q || 0;
   const pic = img
     ? `<img class="thumb" loading="lazy" referrerpolicy="no-referrer" src="${IMG + img}" alt=""
@@ -358,20 +414,54 @@ function tileHTML(cat, item){
     ${(() => {
       const b = VAR_BASE[vid];
       if(!b) return "";
+      const long = b.v.opts.length > 4 || b.v.opts.some(o => (o[0] || "").length > 14);
+      if(long) return `<div class="vsel"><select data-pickvar="1" aria-label="Choose type">` + b.v.opts.map(o =>
+        `<option value="${o[1]}" ${o[1]===vid?'selected':''}>${(o[0] || "Regular").replace(/</g,"&lt;")}${isSold(o[1]) ? " — sold out" : ""}</option>`).join("") +
+        `</select><span class="vcount">${b.v.opts.length} types</span></div>`;
       return `<div class="vrow">` + b.v.opts.map(o =>
-        `<button class="vchip ${o[1]===vid?'sel':''} ${isSold(o[1])?'vsold':''}" data-jump="${o[1]}">${o[0]}</button>`).join("") + `</div>`;
+        `<button class="vchip ${o[1]===vid?'sel':''} ${isSold(o[1])?'vsold':''}" data-jump="${o[1]}">${o[0] || "Regular"}</button>`).join("") + `</div>`;
     })()}
+    ${sold ? `` : `<div class="quick">${QUICK.map(n => `<button data-setq="${vid}" data-n="${n}" class="${q===n?'on':''}">${n}</button>`).join("")}</div>`}
     ${q ? `<div class="qty">${q}</div>
     <div class="step">
       <button data-dec="${vid}" aria-label="Remove one">−</button>
-      <span>${q} × ${money(p)}</span>
+      <button class="qnum" data-typeq="${vid}" aria-label="Type quantity">${q} × ${money(p)}</button>
       <button data-inc="${vid}" aria-label="Add one">+</button>
     </div>` : ``}
   </div>`;
 }
 
+/* the variant the rep picked last on a card (or the matched one) */
+function shownRow(cat, it){
+  const b = VAR_BASE[it[2]]; if(!b) return it;
+  const pick = chosen[b.base];
+  if(!pick || pick === it[2]) return it;
+  return CAT[cat].find(x => x[2] === pick) || it;
+}
 function render(){
-  if(activeCat === "All" && !query){ $("#main").innerHTML = homeHTML(); syncBar(); return; }
+  if(activeCat === "All" && !query){
+    const ts = topSellers(8);
+    $("#main").innerHTML = (ts.length ? `<section class="sect"><h2>Top sellers<b>last 6 months</b></h2>
+      <div class="grid">${ts.map(([c, r]) => tileHTML(c, shownRow(c, r))).join("")}</div></section>` : "") + homeHTML();
+    syncBar(); return;
+  }
+  if(query){
+    const q = pNorm(query), qw = q.split(" ").filter(Boolean);
+    const hits = [];
+    cats.forEach(c => CAT[c].forEach(r => { const sc = scoreItem(r, q, qw); if(sc) hits.push([sc, c, r]); }));
+    hits.sort((a, b) => b[0] - a[0] || (a[2][5]||0) - (b[2][5]||0) || (b[2][6]||0) - (a[2][6]||0));
+    const seen = new Set(), rows = [];
+    for(const [, c, r] of hits){
+      const b = VAR_BASE[r[2]]; const key = b ? b.base : r[2];
+      if(seen.has(key)) continue; seen.add(key); rows.push([c, shownRow(c, r)]);
+      if(rows.length >= SEARCH_CAP) break;
+    }
+    $("#main").innerHTML = rows.length
+      ? `<section class="sect"><h2>Results for “${query.replace(/</g,"&lt;")}”<b>${rows.length}${rows.length >= SEARCH_CAP ? "+" : ""} items</b></h2>
+         <div class="grid">${rows.map(([c, r]) => tileHTML(c, r)).join("")}</div></section>`
+      : `<div class="empty">Nothing close to “${query.replace(/</g,"&lt;")}”. Try another word.</div>`;
+    syncBar(); return;
+  }
   const list = (activeCat === "All" || query) ? cats : [activeCat];   // a search always looks in every category
   let html = "", hits = 0, shown = 0;
   list.forEach(cat => {
@@ -432,6 +522,15 @@ document.addEventListener("click", e => {
   }
   const cc = e.target.closest("[data-opencat]");
   if(cc) return openCat(cc.dataset.opencat);
+  const sq = e.target.closest("[data-setq]");
+  if(sq) return setQty(+sq.dataset.setq, +sq.dataset.n);
+  const tq = e.target.closest("[data-typeq]");
+  if(tq){
+    const vid = +tq.dataset.typeq, cur = order.get(vid)?.q || 0;
+    const v = prompt("Quantity", cur);
+    if(v !== null && /^\d+$/.test(v.trim())) setQty(vid, +v.trim());
+    return;
+  }
   const add = e.target.closest(".add");
   const inc = e.target.closest("[data-inc]");
   const dec = e.target.closest("[data-dec]");
@@ -499,8 +598,10 @@ document.getElementById("orderNote").addEventListener("input", refreshShare);
 
 function openSheet(){
   drawSheet();
+  // move the two send buttons to the top of the sheet
+  const top = $("#sendTop"); if(!top.children.length){ top.appendChild($("#waBtn")); top.appendChild($("#copyBtn")); }
   const d = $("#sheet");
-  if(typeof d.showModal === "function") d.showModal();
+  if(typeof d.showModal === "function"){ d.showModal(); document.activeElement && document.activeElement.blur && document.activeElement.blur(); }
   else { d.setAttribute("open",""); d.classList.add("fallbackOpen"); }
 }
 function closeSheet(){
@@ -510,6 +611,8 @@ function closeSheet(){
   document.body.classList.remove("sheeting");
 }
 $("#openSheet").onclick = () => openSheet();
+$("#xClose").onclick = () => closeSheet();
+$("#sheet").addEventListener("click", e => { if(e.target === $("#sheet")) closeSheet(); });
 $("#closeBtn").onclick = () => closeSheet();
 $("#cartBtn").onclick = () => {
   if(!order.size) return;
@@ -539,6 +642,11 @@ $("#csvBtn").onclick = () => {
 };
 $("#clearBtn").onclick = () => { order.clear(); document.getElementById("orderNote").value = ""; render(); drawSheet(); };
 
+document.addEventListener("change", e => {
+  const s = e.target.closest("[data-pickvar]"); if(!s) return;
+  const vid = +s.value, b = VAR_BASE[vid]; if(!b) return;
+  chosen[b.base] = vid; render();
+});
 let t;
 $("#q").addEventListener("input", e => {
   clearTimeout(t);
