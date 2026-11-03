@@ -115,6 +115,8 @@ dialog:not([open]){display:none}
 .quick button.usual{border-color:#1f8b4c;color:#1f8b4c;background:#eef8f1}
 .quick button.usual::before{content:"★ ";font-size:10px}
 .quick button.usual.on{background:#1f8b4c;color:#fff}
+.step.zero{background:#f7f6f3!important}
+.step button:disabled{opacity:.35}
 .usualnote{font-size:10.5px;color:#1f8b4c;padding:0 9px 6px;font-weight:600}
 .quick button{font:inherit;font-size:13px;font-weight:700;padding:9px 0;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
 .quick button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -177,8 +179,8 @@ dialog:not([open]){display:none}
   </div>
 </dialog>
 
-<script src="items.js?v=202611031527"></script>
-<script src="stores.js?v=202611031527"></script>
+<script src="items.js?v=202611031529"></script>
+<script src="stores.js?v=202611031529"></script>
 <script>document.write('<script src="live.js?t=' + Date.now() + '"><\/script>')</script>
 <script>
 const IMG = "https://cdn.shopify.com/s/files/1/0681/8231/1226/";
@@ -428,16 +430,16 @@ function tileHTML(cat, item){
     })()}
     ${sold ? `` : (() => {
       const usual = item[7] || [];
-      const nums = [...new Set([1, 2, 3, ...usual])].sort((a, b) => a - b);
-      return `<div class="quick">${nums.map(n => `<button data-setq="${vid}" data-n="${n}" class="${q===n?'on':''} ${usual.includes(n)?'usual':''}">${n}</button>`).join("")}</div>` +
-        (usual.length ? `<div class="usualnote">★ usual order</div>` : ``);
+      if(!usual.length) return ``;
+      return `<div class="quick">${usual.map(n => `<button data-setq="${vid}" data-n="${n}" class="usual ${q===n?'on':''}">${n}</button>`).join("")}</div>` +
+        `<div class="usualnote">★ usual order</div>`;
     })()}
-    ${q ? `<div class="qty">${q}</div>
-    <div class="step">
-      <button data-dec="${vid}" aria-label="Remove one">−</button>
-      <button class="qnum" data-typeq="${vid}" aria-label="Type quantity">${q} × ${money(p)}</button>
+    ${q ? `<div class="qty">${q}</div>` : ``}
+    ${sold ? `` : `<div class="step ${q ? '' : 'zero'}">
+      <button data-dec="${vid}" aria-label="Remove one" ${q ? '' : 'disabled'}>−</button>
+      <button class="qnum" data-typeq="${vid}" aria-label="Type quantity">${q ? q + ' × ' + money(p) : '0'}</button>
       <button data-inc="${vid}" aria-label="Add one">+</button>
-    </div>` : ``}
+    </div>`}
   </div>`;
 }
 
