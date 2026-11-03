@@ -1,0 +1,37 @@
+name: Refresh catalog stock and prices
+
+on:
+  schedule:
+    # every 3 hours in the daytime, US Eastern (about 7am to 10pm)
+    - cron: "7 12,15,18,21,0,3 * * *"
+  workflow_dispatch: {}   # "Run workflow" button for a manual refresh
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-catalog
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Read Shopify and rewrite catalog/live.js
+        run: python scripts/refresh_live.py
+      - name: Save if anything changed
+        run: |
+          if git diff --quiet -- catalog/live.js; then
+            echo "No change in stock or prices."
+            exit 0
+          fi
+          # saved every run so the page's "updated" time is true
+          git config user.name "catalog-refresh-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add catalog/live.js
+          git commit -m "Catalog: refresh stock and prices from Shopify"
+          git push

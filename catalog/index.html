@@ -107,7 +107,7 @@ dialog:not([open]){display:none}
 <header>
   <div class="brand">
     <h1>Mayflower Wholesale</h1>
-    <span>Tap an item to add it</span>
+    <span id="liveAt">Tap an item to add it</span>
   </div>
   <div class="search">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
@@ -147,7 +147,8 @@ dialog:not([open]){display:none}
   </div>
 </dialog>
 
-<script src="items.js"></script>
+<script src="items.js?v=202611031402"></script>
+<script>document.write('<script src="live.js?t=' + Date.now() + '"><\/script>')</script>
 <script>
 const IMG = "https://cdn.shopify.com/s/files/1/0681/8231/1226/";
 const SHOP = "https://mayflowerwholesale.com";
@@ -164,7 +165,7 @@ Object.entries(VARIANTS).forEach(([base, v]) => {
   CAT[v.cat] = CAT[v.cat] || [];
   v.opts.forEach(([label, vid]) => {
     const lv = (window.LIVE || {})[vid];
-    CAT[v.cat].push([base + " - " + label, (lv && lv[0] != null) ? lv[0] : v.price, vid, v.img]);
+    CAT[v.cat].push([base + " - " + label, lv ? lv[0] : v.price, vid, v.img]);
   });
 });
 const VAR_BASE = {};
@@ -219,10 +220,11 @@ Object.entries(window.EXTRA_DATA || {}).forEach(([c, list]) => {
   CAT[c] = (CAT[c] || []).concat(list);
 });
 Object.values(CAT).forEach(list => list.forEach(row => {
-  const lv = row[2] > 0 && (window.LIVE || {})[row[2]];
-  if(!lv) return;
-  if(lv[0] != null) row[1] = lv[0];
-  row[5] = lv[1] ? 1 : 0;
+  if(!(row[2] > 0) || !window.LIVE) return;
+  const lv = window.LIVE[row[2]];
+  if(!lv){ row[5] = 1; return; }          // not on the online store any more
+  row[1] = lv[0];
+  row[5] = lv[1] ? 0 : 1;                 // [price, available]
 }));
 Object.keys(CAT).forEach(c => { CAT[c] = CAT[c].map((r,i)=>[r,i]).sort((a,b)=>(a[0][5]||0)-(b[0][5]||0)||a[1]-b[1]).map(x=>x[0]); });  // sold out goes to the bottom
 const isSold = vid => { for(const c in CAT){ const r = CAT[c].find(i => i[2] === vid); if(r) return !!r[5]; } return false; };
@@ -467,6 +469,8 @@ $("#q").addEventListener("input", e => {
   t = setTimeout(() => { query = e.target.value.trim().toLowerCase(); render(); }, 120);
 });
 
+if(window.LIVE_AT) document.getElementById("liveAt").textContent = "Stock & prices updated " +
+  new Date(window.LIVE_AT).toLocaleString([], {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"});
 render();
 
 /* =========================================================
