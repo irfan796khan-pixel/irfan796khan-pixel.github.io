@@ -173,11 +173,12 @@ dialog:not([open]){display:none}
   </div>
 </dialog>
 
-<script src="items.js?v=202611031439"></script>
-<script src="stores.js?v=202611031439"></script>
+<script src="items.js?v=202611031509"></script>
+<script src="stores.js?v=202611031509"></script>
 <script>document.write('<script src="live.js?t=' + Date.now() + '"><\/script>')</script>
 <script>
 const IMG = "https://cdn.shopify.com/s/files/1/0681/8231/1226/";
+const PIC = p => !p ? "" : (/^https?:/.test(p) ? p : IMG + p);
 const SHOP = "https://mayflowerwholesale.com";
 /* your WhatsApp, digits only with country code, e.g. "17815551234".
    Leave blank and the customer picks who to send to. */
@@ -350,7 +351,7 @@ function homeHTML(){
     <div class="grid">${cats.map(c => {
       const pic = CAT[c].find(i => i[3]);
       return `<button class="catcard" data-opencat="${c.replace(/"/g,"&quot;")}">
-        ${pic ? `<img class="thumb" loading="lazy" referrerpolicy="no-referrer" src="${IMG + pic[3]}" alt=""
+        ${pic ? `<img class="thumb" loading="lazy" referrerpolicy="no-referrer" src="${PIC(pic[3])}" alt=""
                onerror="this.outerHTML='<div class=\\'noimg\\'>${c.split(" ")[0]}</div>'">`
               : `<div class="noimg catword">${c.split(" ")[0]}</div>`}
         <span class="cn">${c}</span><span class="cc">${CAT[c].length} items</span></button>`;
@@ -402,7 +403,7 @@ function tileHTML(cat, item){
   const n = vb ? (vb.v.name || vb.base) : full;
   const q = order.get(vid)?.q || 0;
   const pic = img
-    ? `<img class="thumb" loading="lazy" referrerpolicy="no-referrer" src="${IMG + img}" alt=""
+    ? `<img class="thumb" loading="lazy" referrerpolicy="no-referrer" src="${PIC(img)}" alt=""
          onerror="this.outerHTML='<div class=\\'noimg\\'>image blocked</div>'">`
     : `<div class="noimg">no photo</div>`;
   return `
@@ -557,7 +558,7 @@ function drawSheet(){
   if(!order.size) lines.innerHTML = `<div class="empty">No items yet.</div>`;
   else lines.innerHTML = [...order].map(([vid, v]) => `
       <div class="row">
-        ${v.img ? `<img referrerpolicy="no-referrer" src="${IMG + v.img}" alt="">` : `<img alt="">`}
+        ${v.img ? `<img referrerpolicy="no-referrer" src="${PIC(v.img)}" alt="">` : `<img alt="">`}
         <div class="rn">${shortName(v.n)}<em>${money(v.p)} each · ${v.cat}</em>
           <input class="note" data-note="${vid}" value="${v.note||''}" placeholder="flavour / colour / size…">
         </div>
@@ -832,7 +833,7 @@ function findItems(q){
 function showPicks(items){
   gPicks.innerHTML = items.slice(0,5).map(it => `
     <button data-vid="${it.vid}">
-      ${it.img ? `<img referrerpolicy="no-referrer" src="${IMG+it.img}" alt="">`
+      ${it.img ? `<img referrerpolicy="no-referrer" src="${PIC(it.img)}" alt="">`
                : `<div style="aspect-ratio:1/1;background:#f7f6f3;border-radius:5px"></div>`}
       <div class="gp">${money(it.price)}</div>
     </button>`).join("");
