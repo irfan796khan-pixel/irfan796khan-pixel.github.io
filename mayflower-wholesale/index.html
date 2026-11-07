@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=57aca689-17fa-4144-b6a5-3a41288437a6
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mayflower Wholesale — Order Catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0F1D2B; --ink-2:#2b3a49; --paper:#F1EFE9; --card:#fff;
+  --line:#d8d4cb; --signal:#8C1D27; --signal-soft:#f3e3e4; --alert:#8C1D27;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{padding-bottom:140px;font-family:"Archivo",system-ui,-apple-system,Segoe UI,sans-serif;background:var(--paper);color:var(--ink);padding-bottom:96px}
+#topbar{position:sticky;top:0;z-index:40;background:var(--ink)}
+header{background:var(--ink);color:#fff;padding:12px 14px 8px}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.brand h1{font-size:16px;font-weight:800;letter-spacing:-.2px;margin:0}
+.brand span{font-size:11px;font-weight:500;opacity:.65}
+.search{margin-top:10px;position:relative}
+.search input{width:100%;border:0;border-radius:10px;padding:11px 12px 11px 34px;font:inherit;font-size:15px;background:#1e3346;color:#fff}
+.search input::placeholder{color:#8fa2b3}
+.search svg{position:absolute;left:11px;top:11px;stroke:#8fa2b3}
+.chips{display:flex;gap:7px;overflow-x:auto;padding:2px 14px 10px;scrollbar-width:none;background:var(--ink)}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid #34495d;background:transparent;color:#c3d0da;font:inherit;font-size:13px;font-weight:500;padding:7px 13px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:#fff;color:var(--ink);border-color:#fff;font-weight:600}
+main{padding:14px}
+.sect{margin-bottom:26px}
+.sect h2{font-size:13px;font-weight:600;margin:0 0 9px;color:var(--ink-2);display:flex;justify-content:space-between;align-items:center}
+.sect h2 b{font-weight:500;color:#8b8577;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+@media(min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:820px){.grid{grid-template-columns:repeat(4,1fr)}}
+.tile{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.tile.on{border-color:var(--signal);box-shadow:inset 0 0 0 1px var(--signal)}
+.thumb{aspect-ratio:1/1;background:#f7f6f3;display:block;width:100%;object-fit:contain;padding:8px}
+.noimg{aspect-ratio:1/1;display:grid;place-items:center;color:#b8b3a8;font-size:11px;background:#f7f6f3}
+.meta{padding:8px 9px 10px;display:flex;flex-direction:column;gap:5px;flex:1}
+.name{font-size:12.5px;line-height:1.28;font-weight:500;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.price{font-size:14px;font-weight:800;margin-top:auto}
+.qty{position:absolute;top:7px;right:7px;background:var(--signal);color:#fff;min-width:24px;height:24px;border-radius:999px;display:grid;place-items:center;font-size:12px;font-weight:800;padding:0 6px}
+.step{display:flex;align-items:center;justify-content:space-between;gap:6px;border-top:1px solid var(--line);padding:6px 8px;background:var(--signal-soft)}
+.step button{width:30px;height:30px;border-radius:8px;border:1px solid #ddbfc1;background:#fff;font:inherit;font-size:17px;font-weight:700;line-height:1;cursor:pointer;color:var(--ink)}
+.step span{font-size:13px;font-weight:700}
+.vrow{display:flex;gap:4px;overflow-x:auto;padding:0 7px 7px;scrollbar-width:none}
+.vrow::-webkit-scrollbar{display:none}
+.vchip{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:999px;
+  padding:4px 8px;font:inherit;font-size:10.5px;font-weight:600;cursor:pointer;color:var(--ink-2)}
+.vchip.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--ink);color:#fff;padding:11px 14px calc(11px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;gap:12px;transform:translateY(120%);transition:transform .18s ease}
+.bar.show{transform:none}
+.bar .sum{font-size:13px;line-height:1.3}
+.bar .sum b{display:block;font-size:18px;font-weight:800}
+.bar button{border:0;border-radius:10px;background:#fff;color:var(--ink);font:inherit;font-size:14px;font-weight:700;padding:12px 18px;cursor:pointer}
+dialog{border:0;padding:0;width:100%;max-width:620px;border-radius:14px 14px 0 0;margin:auto auto 0;background:var(--paper);color:var(--ink)}
+dialog::backdrop{background:rgba(15,29,43,.55)}
+dialog.fallbackOpen{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:80;
+  display:block;box-shadow:0 -10px 40px rgba(0,0,0,.4)}
+dialog:not([open]){display:none}
+.sheet{padding:16px 14px calc(16px + env(safe-area-inset-bottom));max-height:82vh;overflow:auto}
+.sheet h3{margin:0 0 12px;font-size:17px;font-weight:800}
+.row{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.row img{width:42px;height:42px;object-fit:contain;background:#fff;border-radius:7px;border:1px solid var(--line)}
+.row .rn{flex:1;font-size:13px;line-height:1.3}
+.row .rn em{display:block;font-style:normal;color:#7d7768;font-size:12px;margin-top:2px}
+.row .rn input.note{margin-top:5px;width:100%;border:1px dashed var(--line);border-radius:7px;padding:5px 7px;font:inherit;font-size:11.5px;background:#fff}
+.row .rq{display:flex;align-items:center;gap:5px}
+.row .rq button{width:27px;height:27px;border-radius:7px;border:1px solid var(--line);background:#fff;font:inherit;font-weight:700;cursor:pointer}
+.row .rq b{min-width:20px;text-align:center;font-size:13px}
+.tot{display:flex;justify-content:space-between;font-size:16px;font-weight:800;padding:14px 0 4px}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.acts a,.acts button{display:block;text-align:center;text-decoration:none;border-radius:10px;padding:13px 10px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;border:1px solid var(--ink);background:#fff;color:var(--ink)}
+.acts .primary{background:var(--ink);color:#fff}
+.acts .wide{grid-column:1/-1}
+.clear{margin-top:8px;width:100%;background:transparent;border:0;color:var(--alert);font:inherit;font-size:13px;font-weight:600;padding:10px;cursor:pointer}
+.storebar{display:flex;align-items:center;gap:8px;padding:0 14px 8px;background:var(--ink)}
+.storebar label{color:#8fa2b3;font-size:12px;font-weight:600}
+.storewrap{flex:1;min-width:0;position:relative}
+#storeSug{display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:70;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.28);overflow:hidden;max-height:60vh;overflow-y:auto}
+#storeSug.open{display:block}
+#storeSug button{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;gap:8px;width:100%;padding:11px 12px;font-size:14px;color:var(--ink);border-bottom:1px solid #eee;cursor:pointer}
+#storeSug button.hi,#storeSug button:active{background:var(--signal-soft)}
+#storeSug em{font-style:normal;font-size:11px;color:#8b8577}
+#storeSug .newst{color:var(--signal);font-weight:700}
+.storebar input{width:100%;border:0;border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;font-weight:600;background:#fff;color:var(--ink)}
+.storebar button{border:0;background:#1e3346;color:#c3d0da;border-radius:9px;width:36px;height:36px;font-size:15px;cursor:pointer}
+.tile.soldout{border-color:#d0242f;box-shadow:inset 0 0 0 1px #d0242f}
+.tile.soldout .thumb,.tile.soldout .noimg{opacity:.35;filter:grayscale(1)}
+.tile.soldout .price{color:#d0242f;text-decoration:line-through}
+.soldx{position:absolute;left:0;right:0;top:0;aspect-ratio:1/1;display:grid;place-items:center;align-content:center;z-index:2;pointer-events:none;color:#d0242f;font-size:84px;font-weight:800;line-height:1}
+.soldx span{font-size:13px;letter-spacing:1px;background:#d0242f;color:#fff;padding:3px 8px;border-radius:6px;margin-top:2px}
+.vchip.vsold{color:#d0242f;border-color:#f0b8bb;text-decoration:line-through}
+#flash{position:fixed;left:50%;bottom:90px;transform:translate(-50%,20px);opacity:0;background:#d0242f;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;font-weight:700;z-index:90;transition:.25s;pointer-events:none}
+#flash.show{opacity:1;transform:translate(-50%,0)}
+.catcard{all:unset;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.catcard .cn{padding:8px 9px 0;font-size:13px;font-weight:700;line-height:1.25}
+.catcard .cc{padding:2px 9px 10px;font-size:11.5px;color:#8b8577}
+.catword{font-size:18px;font-weight:800;color:var(--ink-2)}
+.storebar.top{padding:10px 0 0;background:transparent}
+.name{font-size:11.5px!important;line-height:1.25!important;-webkit-line-clamp:2!important}
+.price{font-size:15px!important}
+.vrow{flex-wrap:wrap!important;overflow:visible!important;gap:5px!important;padding:0 8px 8px!important}
+.vchip{font-size:12.5px!important;padding:7px 10px!important;border-width:1.5px!important}
+.vsel{display:flex;align-items:center;gap:6px;padding:0 8px 8px}
+.vsel select{flex:1;min-width:0;font:inherit;font-size:14px;font-weight:600;padding:9px 8px;border:1.5px solid var(--ink);border-radius:9px;background:#fff;color:var(--ink)}
+.vsel .vcount{font-size:11px;color:#8b8577;white-space:nowrap}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:0 8px 4px}
+.quick button.usual{border-color:#1f8b4c;color:#1f8b4c;background:#eef8f1}
+.quick button.usual::before{content:"★ ";font-size:10px}
+.quick button.usual.on{background:#1f8b4c;color:#fff}
+.step.zero{background:#f7f6f3!important}
+.step button:disabled{opacity:.35}
+.usualnote{font-size:10.5px;color:#1f8b4c;padding:0 9px 6px;font-weight:600}
+.quick button{font:inherit;font-size:13px;font-weight:700;padding:9px 0;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
+.quick button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.step{padding:8px!important}
+.step button{width:44px!important;height:44px!important;font-size:22px!important;border-radius:10px!important}
+.step .qnum{width:auto!important;flex:1;font-size:14px!important;border:1px dashed #ddbfc1!important;background:#fff!important}
+.xclose{position:absolute;right:12px;top:12px;border:0;background:#e6e2d9;width:38px;height:38px;border-radius:50%;font-size:17px;cursor:pointer}
+.sheet{position:relative}
+#sendTop{display:grid;gap:8px;margin:2px 0 12px}
+#sendTop .wa{display:block;text-align:center;text-decoration:none;background:#1f8b4c;color:#fff;border-radius:12px;padding:17px 10px;font-size:18px;font-weight:800}
+#sendTop .copy{border:1.5px solid var(--ink);background:#fff;color:var(--ink);border-radius:12px;padding:13px 10px;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+#catside,#orderside{display:none}
+@media(min-width:1100px){
+  body{padding-bottom:0!important}
+  header{display:grid;grid-template-columns:minmax(220px,auto) 1fr 1.2fr;gap:18px;align-items:center;padding:12px 18px!important}
+  header .storebar.top{padding:0!important}
+  header .search{margin-top:0!important}
+  .chips,.bar,#gWrap,#xClose{display:none!important}
+  #layout{display:grid;grid-template-columns:280px minmax(0,1fr) 380px;gap:16px;padding:16px;align-items:start}
+  main{padding:0!important}
+  #catside,#orderside{display:block;position:sticky;top:calc(var(--tb,120px) + 12px);max-height:calc(100vh - var(--tb,120px) - 28px);overflow:auto;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+  #catside h2,#orderside h3{margin:0 0 4px;font-size:17px;font-weight:800}
+  #catside p{margin:0 0 12px;font-size:12px;color:#8b8577}
+  .csgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .cs{all:unset;box-sizing:border-box;cursor:pointer;border:1.5px solid var(--line);border-radius:12px;padding:8px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;background:#fbfaf7}
+  .cs:hover{border-color:var(--ink-2)}
+  .cs.on{border-color:var(--signal);background:var(--signal-soft)}
+  .cs img{width:100%;height:64px;object-fit:contain}
+  .cs .csw{height:64px;display:grid;place-items:center;font-weight:800;color:var(--ink-2)}
+  .cs b{font-size:12px;line-height:1.2;font-weight:700}
+  .cs i{font-style:normal;font-size:11px;color:#8b8577}
+  #orderside .sheet{padding:0!important;max-height:none!important;overflow:visible!important}
+  #orderside #lines .row{padding:8px 0}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))!important;gap:12px!important}
+}
+.empty{padding:40px 10px;text-align:center;color:#8b8577;font-size:14px}
+:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+<header>
+  <div class="brand">
+    <h1>Mayflower Wholesale</h1>
+    <span id="liveAt">Tap an item to add it</span>
+  </div>
+<div class="storebar top">
+  <label for="store">Store</label>
+  <div class="storewrap">
+    <input id="store" placeholder="Pick a store or type a new one" autocomplete="off" autocorrect="off" spellcheck="false">
+    <div id="storeSug" role="listbox"></div>
+  </div>
+  <button id="storeForget" type="button" title="Clear / remove this store">✕</button>
+</div>
+  <div class="search">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    <input id="q" type="search" placeholder="Search item or price…" autocomplete="off">
+  </div>
+</header>
+<nav class="chips" id="chips"></nav>
+</div>
+<div id="layout">
+<aside id="catside" aria-label="Categories"></aside>
+<main id="main"></main>
+<aside id="orderside" aria-label="Live order"></aside>
+</div>
+
+<div class="bar" id="bar">
+  <div class="sum"><span id="barCount">0 items</span><b id="barTotal">$0.00</b></div>
+  <button id="openSheet">Review order</button>
+</div>
+
+<dialog id="sheet">
+  <div class="sheet" tabindex="-1" autofocus>
+    <button type="button" class="xclose" id="xClose" aria-label="Close">✕</button>
+    <h3>Your order <small id="sheetCount"></small><span id="sheetStore" style="display:block;font-size:13px;font-weight:600;color:#8C1D27;margin-top:3px"></span></h3>
+    <div id="sendTop"></div>
+    <div id="lines"></div>
+    <textarea id="orderNote" rows="2" placeholder="Comment for this order (delivery day, special request…)"
+      style="width:100%;margin-top:12px;border:1px solid var(--line);border-radius:9px;padding:9px 10px;font:inherit;font-size:13.5px;background:#fff;resize:vertical"></textarea>
+    <div class="tot"><span>Total</span><span id="sheetTotal">$0.00</span></div>
+    <a id="waBtn" class="wa" target="_blank" rel="noopener">Send on WhatsApp</a>
+    <button id="copyBtn" class="copy">Copy order list</button>
+    <button class="clear" id="clearBtn">Clear order</button>
+    <button id="closeBtn" hidden></button><button id="cartBtn" hidden></button><button id="csvBtn" hidden></button>
+  </div>
+</dialog>
+
+<script src="../catalog/items.js?v=202611041546"></script>
+<script src="../catalog/stores.js?v=202611041546"></script>
+<script>document.write('<script src="../catalog/live.js?t=' + Date.now() + '"><\/script>')</script>
+<script>
+const IMG = "https://cdn.shopify.com/s/files/1/0681/8231/1226/";
+const PIC = p => !p ? "" : (/^https?:/.test(p) ? p : IMG + p);
+const SHOP = "https://mayflowerwholesale.com";
+/* your WhatsApp, digits only with country code, e.g. "17815551234".
+   Leave blank and the customer picks who to send to. */
+const MY_WHATSAPP = "";
+
+const CAT = window.CAT_DATA || {};
+const VARIANTS = window.VARIANTS_DATA || {};
+
+/* fold them into the catalog so they browse and search like anything else */
+Object.values(VARIANTS).forEach(v => { v.cat = (window.CAT_RENAME||{})[v.cat] || v.cat; });
+Object.entries(VARIANTS).forEach(([base, v]) => {
+  CAT[v.cat] = CAT[v.cat] || [];
+  v.opts.forEach(([label, vid, price, img, zid]) => {
+    const lv = (window.LIVE || {})[vid];
+    const nm = v.name || base;
+    const full = !label ? nm : (label.toLowerCase().startsWith(nm.toLowerCase().slice(0, 12)) ? label : nm + " - " + label);
+    CAT[v.cat].push([full, lv ? lv[0] : (price != null ? price : v.price), vid, img || v.img, zid || "", 0, v.sales || 0, v.usual || []]);
+  });
+});
+const VAR_BASE = {};
+Object.entries(VARIANTS).forEach(([base, v]) =>
+  v.opts.forEach(([label, vid]) => VAR_BASE[vid] = {base, label, v}));
+
+/* ---------- store name (saved on this phone only) ---------- */
+const STORE_KEY = "mf_stores", CUR_KEY = "mf_store";
+function lsGet(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } }
+function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+let stores = lsGet(STORE_KEY, []);
+let allStores = [];
+function drawStores(){
+  const mine = new Set(stores.map(x => x.toLowerCase()));
+  allStores = stores.map(n => ({n, mine:1})).concat(
+    (window.CRM_STORES || []).filter(x => !mine.has(x.toLowerCase())).map(n => ({n, mine:0})));
+  allStores.forEach(s => { s.k = normName(s.n); s.w = s.k.split(" "); });
+}
+/* closeness: whole text at start > a word starts with it > contained > every word found > near spelling */
+function normName(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
+function grams(s){ const g = new Set(), t = " " + s + " "; for(let i=0;i<t.length-1;i++) g.add(t.slice(i,i+2)); return g; }
+function dice(a, b){ const A = grams(a), B = grams(b); let n = 0; A.forEach(x => B.has(x) && n++); return 2*n/(A.size+B.size||1); }
+function scoreStore(s, q, qw){
+  if(s.k.startsWith(q)) return 100;
+  if(s.w.some(w => w.startsWith(q))) return 90;
+  if(s.k.includes(q)) return 80;
+  if(qw.every(t => s.w.some(w => w.startsWith(t)))) return 70;
+  if(qw.every(t => s.k.includes(t))) return 60;
+  // typo tolerance: best word-by-word spelling match
+  let sum = 0;
+  qw.forEach(t => { let best = 0; s.w.forEach(w => { const d = dice(t, w.slice(0, t.length + 2)); if(d > best) best = d; }); sum += best; });
+  const avg = sum / qw.length;
+  return avg >= 0.55 ? Math.round(avg * 55) : 0;
+}
+function suggestStores(text){
+  const q = normName(text);
+  if(!q) return allStores.filter(s => s.mine).slice(0, 8);
+  const qw = q.split(" ");
+  return allStores.map(s => ({s, sc: scoreStore(s, q, qw) + (s.mine ? 3 : 0)}))
+    .filter(x => x.sc > 3).sort((a, b) => b.sc - a.sc || a.s.n.length - b.s.n.length)
+    .slice(0, 8).map(x => x.s);
+}
+let sugIdx = -1;
+function showSug(){
+  const box = document.getElementById("store"), el = document.getElementById("storeSug");
+  const list = suggestStores(box.value);
+  sugIdx = -1;
+  if(!list.length || document.activeElement !== box){ el.classList.remove("open"); el.innerHTML = ""; return; }
+  el.innerHTML = list.map((s, i) => `<button type="button" data-pick="${i}">${s.n.replace(/</g,"&lt;")}${s.mine ? '<em>saved</em>' : ''}</button>`).join("")
+    + (box.value.trim() && !list.some(s => s.n.toLowerCase() === box.value.trim().toLowerCase())
+       ? `<button type="button" data-new="1" class="newst">+ New store: “${box.value.trim().replace(/</g,"&lt;")}”</button>` : "");
+  el._list = list; el.classList.add("open");
+}
+function pickStore(name){
+  const box = document.getElementById("store");
+  box.value = name; saveStore();
+  const el = document.getElementById("storeSug"); el.classList.remove("open"); el.innerHTML = "";
+  box.blur();
+}
+function currentStore(){ return document.getElementById("store").value.trim(); }
+function saveStore(){
+  const s = currentStore();
+  lsSet(CUR_KEY, s);
+  if(s && !stores.some(x => x.toLowerCase() === s.toLowerCase())){
+    stores.unshift(s); stores = stores.slice(0, 300); lsSet(STORE_KEY, stores); drawStores();
+  }
+  if(typeof syncBar === "function") syncBar();
+}
+(function initStore(){
+  const box = document.getElementById("store");
+  drawStores();
+  box.value = lsGet(CUR_KEY, "");
+  const sug = document.getElementById("storeSug");
+  box.addEventListener("input", showSug);
+  box.addEventListener("focus", showSug);
+  box.addEventListener("blur", () => setTimeout(() => { sug.classList.remove("open"); }, 200));
+  box.addEventListener("keydown", e => {
+    const btns = [...sug.querySelectorAll("button")];
+    if(e.key === "ArrowDown" || e.key === "ArrowUp"){
+      e.preventDefault(); if(!btns.length) return;
+      sugIdx = (sugIdx + (e.key === "ArrowDown" ? 1 : -1) + btns.length) % btns.length;
+      btns.forEach((b, i) => b.classList.toggle("hi", i === sugIdx));
+    } else if(e.key === "Enter"){
+      e.preventDefault();
+      if(sugIdx >= 0 && btns[sugIdx]) btns[sugIdx].dispatchEvent(new Event("pointerdown", {bubbles:true}));
+      else pickStore(box.value.trim());
+    } else if(e.key === "Escape"){ sug.classList.remove("open"); }
+  });
+  // pointerdown fires before the box loses focus, so the tap is never lost
+  sug.addEventListener("pointerdown", e => {
+    const b = e.target.closest("button"); if(!b) return;
+    e.preventDefault();
+    if(b.dataset.new) pickStore(box.value.trim());
+    else pickStore(sug._list[+b.dataset.pick].n);
+  });
+  document.getElementById("storeForget").onclick = () => {
+    const s = currentStore();
+    stores = stores.filter(x => x.toLowerCase() !== s.toLowerCase()); lsSet(STORE_KEY, stores); drawStores();
+    box.value = ""; lsSet(CUR_KEY, ""); if(typeof syncBar === "function") syncBar();
+    box.focus();
+  };
+})();
+function flash(msg){
+  let f = document.getElementById("flash");
+  if(!f){ f = document.createElement("div"); f.id = "flash"; document.body.appendChild(f); }
+  f.textContent = msg; f.classList.add("show");
+  clearTimeout(flash.t); flash.t = setTimeout(() => f.classList.remove("show"), 1800);
+}
+
+/* ---------- state ---------- */
+const order = new Map();
+const chosen = {};   // which flavour is showing on each variant tile
+let activeCat = "All";
+let query = "";
+const $ = s => document.querySelector(s);
+const money = n => "$" + n.toFixed(2);
+Object.entries(window.EXTRA_DATA || {}).forEach(([c, list]) => {
+  CAT[c] = (CAT[c] || []).concat(list);
+});
+Object.values(CAT).forEach(list => list.forEach(row => {
+  if(!(row[2] > 0) || !window.LIVE) return;
+  const lv = window.LIVE[row[2]];
+  if(!lv){ row[5] = 1; return; }          // not on the online store any more
+  row[1] = lv[0];
+  row[5] = lv[1] ? 0 : 1;                 // [price, available]
+}));
+Object.keys(CAT).forEach(c => { CAT[c] = CAT[c].map((r,i)=>[r,i]).sort((a,b)=>(a[0][5]||0)-(b[0][5]||0)||(b[0][6]||0)-(a[0][6]||0)||a[1]-b[1]).map(x=>x[0]); });  // sold out goes to the bottom
+const isSold = vid => { for(const c in CAT){ const r = CAT[c].find(i => i[2] === vid); if(r) return !!r[5]; } return false; };
+const cats = [...(window.CAT_ORDER || []).filter(c => CAT[c] && CAT[c].length),
+              ...Object.keys(CAT).filter(c => !(window.CAT_ORDER || []).includes(c) && CAT[c].length)];
+
+/* ---------- category chips ---------- */
+const chipWrap = $("#chips");
+["All", ...cats].forEach(c => {
+  const b = document.createElement("button");
+  b.className = "chip"; b.textContent = c === "All" ? "All categories" : c; b.dataset.cat = c;
+  b.setAttribute("aria-pressed", c === "All");
+  b.onclick = () => {
+    activeCat = c;
+    openCat(c);
+  };
+  chipWrap.appendChild(b);
+});
+
+function openCat(c){
+  activeCat = c;
+  [...chipWrap.children].forEach(x => x.setAttribute("aria-pressed", x.dataset.cat === c));
+  chipWrap.querySelector(`[data-cat="${CSS.escape(c)}"]`)?.scrollIntoView({inline:"center", block:"nearest"});
+  render(); window.scrollTo({top:0});
+}
+
+/* first page: one card per category */
+function homeHTML(){
+  return `<section class="sect"><h2>Shop by category<b>${cats.reduce((s,c)=>s+CAT[c].length,0)} items</b></h2>
+    <div class="grid">${cats.map(c => {
+      const pic = CAT[c].find(i => i[3]);
+      return `<button class="catcard" data-opencat="${c.replace(/"/g,"&quot;")}">
+        ${pic ? `<img class="thumb" loading="lazy" referrerpolicy="no-referrer" src="${PIC(pic[3])}" alt=""
+               onerror="this.outerHTML='<div class=\\'noimg\\'>${c.split(" ")[0]}</div>'">`
+              : `<div class="noimg catword">${c.split(" ")[0]}</div>`}
+        <span class="cn">${c}</span><span class="cc">${CAT[c].length} items</span></button>`;
+    }).join("")}</div></section>`;
+}
+const SEARCH_CAP = 150;
+function pNorm(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
+const ROWKEY = new Map();
+function rowKey(it){ let k = ROWKEY.get(it); if(!k){ const t = pNorm(it[0]); k = {t, w: t.split(" ")}; ROWKEY.set(it, k); } return k; }
+function scoreItem(it, q, qw){
+  const {t, w} = rowKey(it);
+  if(t.startsWith(q)) return 100;
+  if(t.includes(q)) return w.some(x => x.startsWith(qw[0])) ? 90 : 80;
+  let hit = 0, fuzz = 0;
+  for(const term of qw){
+    if(w.some(x => x.startsWith(term))){ hit++; continue; }
+    if(term.length >= 3 && w.some(x => x.includes(term))){ hit += .8; continue; }
+    let best = 0;
+    if(term.length >= 3) for(const x of w){ const d = dice(term, x.slice(0, term.length + 2)); if(d > best) best = d; }
+    if(best >= .5){ fuzz += best; }
+  }
+  const all = (hit + fuzz) / qw.length;
+  if(hit === qw.length) return 70;
+  return all >= .6 ? Math.round(all * 60) : 0;
+}
+function topSellers(n){
+  const seen = new Set(), out = [];
+  const rows = [];
+  cats.forEach(c => CAT[c].forEach(r => { if(!r[5] && r[6] > 0) rows.push([c, r]); }));
+  rows.sort((a, b) => b[1][6] - a[1][6]);
+  for(const [c, r] of rows){
+    const b = VAR_BASE[r[2]]; const key = b ? b.base : r[2];
+    if(seen.has(key)) continue; seen.add(key); out.push([c, r]);
+    if(out.length >= n) break;
+  }
+  return out;
+}
+
+/* ---------- rendering ---------- */
+const QUICK = [6, 12, 24, 50, 100];
+function setQty(vid, n){
+  const cur = order.get(vid)?.q || 0;
+  if(n === cur) return;
+  bump(vid, n - cur);
+}
+function tileHTML(cat, item){
+  const [full, p, vid, img, , sold] = item;
+  const vb = VAR_BASE[vid];
+  const n = vb ? (vb.v.name || vb.base) : full;
+  const q = order.get(vid)?.q || 0;
+  const pic = img
+    ? `<img class="thumb" loading="lazy" referrerpolicy="no-referrer" src="${PIC(img)}" alt=""
+         onerror="this.outerHTML='<div class=\\'noimg\\'>image blocked</div>'">`
+    : `<div class="noimg">no photo</div>`;
+  return `
+  <div class="tile ${q?'on':''} ${sold?'soldout':''}">${sold ? `<div class="soldx" aria-label="Sold out">✕<span>SOLD OUT</span></div>` : ``}
+    <button class="add" data-vid="${vid}" style="all:unset;cursor:pointer;display:block">
+      ${pic}
+      <div class="meta"><div class="name">${n}</div><div class="price">${money(p)}</div></div>
+    </button>
+    ${(() => {
+      const b = VAR_BASE[vid];
+      if(!b) return "";
+      const long = b.v.opts.length > 4 || b.v.opts.some(o => (o[0] || "").length > 14);
+      if(long) return `<div class="vsel"><select data-pickvar="1" aria-label="Choose type">` + b.v.opts.map(o =>
+        `<option value="${o[1]}" ${o[1]===vid?'selected':''}>${(o[0] || "Regular").replace(/</g,"&lt;")}${isSold(o[1]) ? " — sold out" : ""}</option>`).join("") +
+        `</select><span class="vcount">${b.v.opts.length} types</span></div>`;
+      return `<div class="vrow">` + b.v.opts.map(o =>
+        `<button class="vchip ${o[1]===vid?'sel':''} ${isSold(o[1])?'vsold':''}" data-jump="${o[1]}">${o[0] || "Regular"}</button>`).join("") + `</div>`;
+    })()}
+    ${sold ? `` : (() => {
+      const usual = item[7] || [];
+      if(!usual.length) return ``;
+      return `<div class="quick">${usual.map(n => `<button data-setq="${vid}" data-n="${n}" class="usual ${q===n?'on':''}">${n}</button>`).join("")}</div>` +
+        `<div class="usualnote">★ usual order</div>`;
+    })()}
+    ${q ? `<div class="qty">${q}</div>` : ``}
+    ${sold ? `` : `<div class="step ${q ? '' : 'zero'}">
+      <button data-dec="${vid}" aria-label="Remove one" ${q ? '' : 'disabled'}>−</button>
+      <button class="qnum" data-typeq="${vid}" aria-label="Type quantity">${q ? q + ' × ' + money(p) : '0'}</button>
+      <button data-inc="${vid}" aria-label="Add one">+</button>
+    </div>`}
+  </div>`;
+}
+
+/* the variant the rep picked last on a card (or the matched one) */
+function shownRow(cat, it){
+  const b = VAR_BASE[it[2]]; if(!b) return it;
+  const pick = chosen[b.base];
+  if(!pick || pick === it[2]) return it;
+  return CAT[cat].find(x => x[2] === pick) || it;
+}
+function render(){
+  if(activeCat === "All" && !query){
+    const ts = topSellers(8);
+    $("#main").innerHTML = (ts.length ? `<section class="sect"><h2>Top sellers<b>last 6 months</b></h2>
+      <div class="grid">${ts.map(([c, r]) => tileHTML(c, shownRow(c, r))).join("")}</div></section>` : "") + homeHTML();
+    syncBar(); return;
+  }
+  if(query){
+    const q = pNorm(query), qw = q.split(" ").filter(Boolean);
+    const hits = [];
+    cats.forEach(c => CAT[c].forEach(r => { const sc = scoreItem(r, q, qw); if(sc) hits.push([sc, c, r]); }));
+    hits.sort((a, b) => b[0] - a[0] || (a[2][5]||0) - (b[2][5]||0) || (b[2][6]||0) - (a[2][6]||0));
+    const seen = new Set(), rows = [];
+    for(const [, c, r] of hits){
+      const b = VAR_BASE[r[2]]; const key = b ? b.base : r[2];
+      if(seen.has(key)) continue; seen.add(key); rows.push([c, shownRow(c, r)]);
+      if(rows.length >= SEARCH_CAP) break;
+    }
+    $("#main").innerHTML = rows.length
+      ? `<section class="sect"><h2>Results for “${query.replace(/</g,"&lt;")}”<b>${rows.length}${rows.length >= SEARCH_CAP ? "+" : ""} items</b></h2>
+         <div class="grid">${rows.map(([c, r]) => tileHTML(c, r)).join("")}</div></section>`
+      : `<div class="empty">Nothing close to “${query.replace(/</g,"&lt;")}”. Try another word.</div>`;
+    syncBar(); return;
+  }
+  const list = (activeCat === "All" || query) ? cats : [activeCat];   // a search always looks in every category
+  let html = "", hits = 0, shown = 0;
+  list.forEach(cat => {
+    let items = CAT[cat].filter(it =>
+      !query || it[0].toLowerCase().includes(query) || String(it[1]).includes(query));
+    const seenBase = new Set();
+    items = items.filter(it => {
+      const b = VAR_BASE[it[2]];
+      if(!b) return true;
+      if(seenBase.has(b.base)) return false;
+      seenBase.add(b.base); return true;
+    }).map(it => {
+      const b = VAR_BASE[it[2]];
+      if(!b) return it;
+      const pick = chosen[b.base];
+      if(!pick || pick === it[2]) return it;
+      return CAT[cat].find(x => x[2] === pick) || it;
+    });
+    if(!items.length) return;
+    hits += items.length;
+    if(query){
+      if(shown >= SEARCH_CAP) return;
+      items = items.slice(0, SEARCH_CAP - shown);
+    }
+    shown += items.length;
+    html += `<section class="sect"><h2>${cat}<b>${items.length} items</b></h2>
+      <div class="grid">${items.map(i => tileHTML(cat, i)).join("")}</div></section>`;
+  });
+  const more = hits > shown ? `<div class="empty">Showing ${shown} of ${hits}. Type more of the name to narrow it.</div>` : "";
+  $("#main").innerHTML = hits ? html + more : `<div class="empty">Nothing matches “${query}”. Try a shorter word.</div>`;
+  syncBar();
+}
+
+/* ---------- ordering ---------- */
+function bump(vid, delta){
+  let found = null, cat = null;
+  for(const c of cats){
+    const f = CAT[c].find(i => i[2] === vid);
+    if(f){ found = f; cat = c; break; }
+  }
+  if(!found) return;
+  if(found[5] && delta > 0){ flash("Sold out — can't add this one"); return; }
+  const q = (order.get(vid)?.q || 0) + delta;
+  if(q <= 0) order.delete(vid);
+  else order.set(vid, {n: found[0], p: found[1], img: found[3], zid: found[4] || "", q, cat});
+  render();
+  if($("#sheet").open) drawSheet();
+}
+
+document.addEventListener("click", e => {
+  const chip = e.target.closest("[data-jump]");
+  if(chip){
+    e.stopPropagation();
+    const vid = +chip.dataset.jump, b = VAR_BASE[vid];
+    chosen[b.base] = vid;
+    render();
+    return;
+  }
+  const cc = e.target.closest("[data-opencat]");
+  if(cc) return openCat(cc.dataset.opencat);
+  const sq = e.target.closest("[data-setq]");
+  if(sq) return setQty(+sq.dataset.setq, +sq.dataset.n);
+  const tq = e.target.closest("[data-typeq]");
+  if(tq){
+    const vid = +tq.dataset.typeq, cur = order.get(vid)?.q || 0;
+    const v = prompt("Quantity", cur);
+    if(v !== null && /^\d+$/.test(v.trim())) setQty(vid, +v.trim());
+    return;
+  }
+  const add = e.target.closest(".add");
+  const inc = e.target.closest("[data-inc]");
+  const dec = e.target.closest("[data-dec]");
+  if(inc) return bump(+inc.dataset.inc, 1);
+  if(dec) return bump(+dec.dataset.dec, -1);
+  if(add) return bump(+add.dataset.vid, 1);
+});
+
+function totals(){
+  let count = 0, sum = 0;
+  order.forEach(v => { count += v.q; sum += v.q * v.p; });
+  return {count, sum};
+}
+function syncBar(){
+  const {count, sum} = totals();
+  $("#bar").classList.toggle("show", count > 0);
+  document.getElementById("gWrap")?.classList.toggle("noBar", count === 0);
+  $("#barCount").textContent = (currentStore() ? currentStore() + " · " : "") + count + (count === 1 ? " item" : " items");
+  $("#barTotal").textContent = money(sum);
+  const sc = document.getElementById("sheetCount"); if(sc) sc.textContent = order.size ? `(${order.size} item${order.size === 1 ? "" : "s"} · ${count} pcs)` : "";
+  if(DESK.matches && document.querySelector("#orderside .sheet")){ drawSheet(); drawCatSide(); }
+}
+
+/* ---------- desktop split pane ---------- */
+const DESK = window.matchMedia("(min-width: 1100px)");
+function drawCatSide(){
+  const el = document.getElementById("catside"); if(!el || !DESK.matches) return;
+  const cardCount = c => { const seen = new Set(); CAT[c].forEach(r => { const b = VAR_BASE[r[2]]; seen.add(b ? b.base : r[2]); }); return seen.size; };
+  const total = cats.reduce((s, c) => s + cardCount(c), 0);
+  const tile = (c, label, n, pic) => `<button class="cs ${activeCat === c && !query ? 'on' : ''}" data-opencat="${c.replace(/"/g,"&quot;")}">
+      ${pic ? `<img loading="lazy" referrerpolicy="no-referrer" src="${PIC(pic)}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="csw">${label.split(" ")[0]}</span>`}
+      <b>${label}</b><i>${n}</i></button>`;
+  el.innerHTML = `<h2>Browse categories</h2><p>Tap a category. Top sellers come first.</p><div class="csgrid">` +
+    tile("All", "Top sellers & all", total, (topSellers(1)[0] || [])[1]?.[3] || "") +
+    cats.map(c => tile(c, c, cardCount(c), (CAT[c].find(i => i[3]) || [])[3])).join("") + `</div>`;
+}
+function placeOrderBox(){
+  const box = document.querySelector(".sheet"), side = document.getElementById("orderside"), dlg = document.getElementById("sheet");
+  const top = document.getElementById("sendTop");
+  if(top && !top.children.length){ top.appendChild(document.getElementById("waBtn")); top.appendChild(document.getElementById("copyBtn")); }
+  if(DESK.matches){ if(box.parentNode !== side){ if(dlg.open) closeSheet(); side.appendChild(box); } drawSheet(); drawCatSide(); }
+  else if(box.parentNode !== dlg){ dlg.appendChild(box); }
+  document.documentElement.style.setProperty("--tb", document.getElementById("topbar").offsetHeight + "px");
+}
+DESK.addEventListener?.("change", placeOrderBox);
+addEventListener("resize", () => document.documentElement.style.setProperty("--tb", document.getElementById("topbar").offsetHeight + "px"));
+
+function drawSheet(){
+  const lines = $("#lines");
+  if(!order.size) lines.innerHTML = `<div class="empty">No items yet.</div>`;
+  else lines.innerHTML = [...order].map(([vid, v]) => `
+      <div class="row">
+        ${v.img ? `<img referrerpolicy="no-referrer" src="${PIC(v.img)}" alt="">` : `<img alt="">`}
+        <div class="rn">${shortName(v.n)}<em>${money(v.p)} each · ${v.cat}</em>
+          <input class="note" data-note="${vid}" value="${v.note||''}" placeholder="flavour / colour / size…">
+        </div>
+        <div class="rq"><button data-dec="${vid}">−</button><b>${v.q}</b><button data-inc="${vid}">+</button></div>
+      </div>`).join("");
+  $("#sheetTotal").textContent = money(totals().sum);
+  $("#sheetStore").textContent = currentStore() ? "Store: " + currentStore() : "No store picked — choose one at the top";
+  $("#waBtn").href = "https://wa.me/" + MY_WHATSAPP + "?text=" + encodeURIComponent(orderText());
+}
+
+function shortName(n){
+  return n.split("|")[0]
+          .replace(/\s*#\d+\s*$/,"")
+          .replace(/\s*Item\s*[Nn]o\.?:?.*$/,"")
+          .replace(/\s{2,}/g," ")
+          .trim();
+}
+
+function orderText(){
+  let t = currentStore() ? currentStore() + "\n" : "";
+  order.forEach(v => {
+    t += shortName(v.n) + (v.note ? " (" + v.note + ")" : "") + " " + v.q + "\n";
+  });
+  const c = document.getElementById("orderNote")?.value.trim();
+  if(c) t += "\nComment: " + c;
+  return t.trim();
+}
+
+document.getElementById("lines").addEventListener("input", e => {
+  const n = e.target.closest("[data-note]");
+  if(!n) return;
+  const rec = order.get(+n.dataset.note);
+  if(rec) rec.note = n.value;
+  refreshShare();
+});
+function refreshShare(){ $("#waBtn").href = "https://wa.me/" + MY_WHATSAPP + "?text=" + encodeURIComponent(orderText()); }
+document.getElementById("orderNote").addEventListener("input", refreshShare);
+
+function openSheet(){
+  drawSheet();
+  // move the two send buttons to the top of the sheet
+  const top = $("#sendTop"); if(!top.children.length){ top.appendChild($("#waBtn")); top.appendChild($("#copyBtn")); }
+  const d = $("#sheet");
+  if(typeof d.showModal === "function"){ d.showModal(); document.activeElement && document.activeElement.blur && document.activeElement.blur(); }
+  else { d.setAttribute("open",""); d.classList.add("fallbackOpen"); }
+}
+function closeSheet(){
+  const d = $("#sheet");
+  if(typeof d.close === "function" && d.open && !d.classList.contains("fallbackOpen")) d.close();
+  else { d.removeAttribute("open"); d.classList.remove("fallbackOpen"); }
+  document.body.classList.remove("sheeting");
+}
+$("#openSheet").onclick = () => openSheet();
+$("#xClose").onclick = () => closeSheet();
+$("#sheet").addEventListener("click", e => { if(e.target === $("#sheet")) closeSheet(); });
+$("#closeBtn").onclick = () => closeSheet();
+$("#cartBtn").onclick = () => {
+  if(!order.size) return;
+  const onStore = [...order].filter(([vid]) => vid > 0);
+  const offStore = order.size - onStore.length;
+  if(!onStore.length){ alert("These items are not on the online store yet. Use Send on WhatsApp or Copy order list."); return; }
+  if(offStore) alert(offStore + " item(s) are not on the online store yet and will be left out of the online cart. Send them on WhatsApp or copy the list.");
+  const parts = onStore.map(([vid, v]) => `${vid}:${v.q}`).join(",");
+  window.open(`${SHOP}/cart/${parts}`, "_blank");
+};
+$("#copyBtn").onclick = async () => {
+  try{ await navigator.clipboard.writeText(orderText()); $("#copyBtn").textContent = "Copied"; }
+  catch{ $("#copyBtn").textContent = "Copy blocked — select manually"; }
+  setTimeout(() => $("#copyBtn").textContent = "Copy order list", 1800);
+};
+$("#csvBtn").onclick = () => {
+  let csv = "Store,Item,Variety note,Category,Unit price,Qty,Line total,Variant ID,Zoho item ID\n";
+  order.forEach((v, vid) => {
+    csv += `"${currentStore().replace(/"/g,'""')}","${shortName(v.n).replace(/"/g,'""')}","${(v.note||"").replace(/"/g,'""')}","${v.cat}",${v.p},${v.q},${(v.p*v.q).toFixed(2)},${vid > 0 ? vid : ""},${v.zid}\n`;
+  });
+  const a = document.createElement("a");
+  const oc = document.getElementById("orderNote")?.value.trim();
+  if(oc) csv += `"${currentStore().replace(/"/g,'""')}","ORDER COMMENT: ${oc.replace(/"/g,'""')}",,,,,,,\n`;
+  a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
+  a.download = `mayflower-order-${(currentStore() || "store").replace(/[^a-z0-9]+/gi,"-")}-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+};
+$("#clearBtn").onclick = () => { order.clear(); document.getElementById("orderNote").value = ""; render(); drawSheet(); };
+
+document.addEventListener("change", e => {
+  const s = e.target.closest("[data-pickvar]"); if(!s) return;
+  const vid = +s.value, b = VAR_BASE[vid]; if(!b) return;
+  chosen[b.base] = vid; render();
+});
+let t;
+$("#q").addEventListener("input", e => {
+  clearTimeout(t);
+  t = setTimeout(() => { query = e.target.value.trim().toLowerCase(); render(); }, 120);
+});
+
+placeOrderBox();
+if(window.LIVE_AT) document.getElementById("liveAt").textContent = "Stock & prices updated " +
+  new Date(window.LIVE_AT).toLocaleString([], {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"});
+render();
+
+
+</script>
+</body>
+</html>
