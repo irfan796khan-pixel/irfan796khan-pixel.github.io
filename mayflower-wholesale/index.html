@@ -209,7 +209,7 @@ dialog:not([open]){display:none}
 </dialog>
 
 <script src="../catalog/items.js?v=202611041546"></script>
-<script src="../catalog/stores.js?v=202611041546"></script>
+<!-- store name list hidden for now: [script src="../catalog/stores.js?v=202611041546"][/script] -->
 <script>document.write('<script src="../catalog/live.js?t=' + Date.now() + '"><\/script>')</script>
 <script>
 const IMG = "https://cdn.shopify.com/s/files/1/0681/8231/1226/";
@@ -238,6 +238,7 @@ Object.entries(VARIANTS).forEach(([base, v]) =>
   v.opts.forEach(([label, vid]) => VAR_BASE[vid] = {base, label, v}));
 
 /* ---------- store name (saved on this phone only) ---------- */
+const HIDE_STORE_LIST = true; /* set false to show store names again */
 const STORE_KEY = "mf_stores", CUR_KEY = "mf_store";
 function lsGet(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } }
 function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
@@ -266,6 +267,7 @@ function scoreStore(s, q, qw){
   return avg >= 0.55 ? Math.round(avg * 55) : 0;
 }
 function suggestStores(text){
+  if(HIDE_STORE_LIST) return [];
   const q = normName(text);
   if(!q) return allStores.filter(s => s.mine).slice(0, 8);
   const qw = q.split(" ");
